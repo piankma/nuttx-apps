@@ -132,10 +132,10 @@ static void dump_gauge(int fd, uint32_t mask)
   int ret = 0;
   int state = 0;
   bool online = false;
-  b16_t cap = 0;
-  b16_t vol = 0;
-  b16_t current = 0;
-  b8_t temp = 0;
+  int cap = 0;
+  int vol = 0;
+  int current = 0;
+  int temp = 0;
 
   ret = ioctl(fd, BATIOC_STATE, (unsigned long)&state);
   if (ret < 0)
@@ -173,13 +173,18 @@ static void dump_gauge(int fd, uint32_t mask)
       printf("BATIOC_TEMPERATURE failed %d", ret);
     }
 
-  printf("mask:%"PRIx32", state:%d, online:%d, vol:%f, capacity:%"
-         PRIi32"%%, current:%f, temperature:%f\n",
-         mask, state, online, b16tof(vol), b16toi(cap),
-         b16tof(current), b8tof(temp));
+  /* The units the gauge interface documents: mV, %, mA and, as the gauge
+   * drivers report it, tenths of a degree Celsius.
+   */
+
+  printf("mask:%"PRIx32", state:%d, online:%d, vol:%d mV, capacity:%d%%, "
+         "current:%d mA, temperature:%s%d.%d C\n",
+         mask, state, online, vol, cap, current, temp < 0 ? "-" : "",
+         abs(temp) / 10, abs(temp) % 10);
   return;
 }
 
+#ifdef CONFIG_BATTERY_MONITOR
 static void dump_monitor(int fd, uint32_t mask)
 {
   int status = 0;
@@ -233,6 +238,7 @@ static void dump_monitor(int fd, uint32_t mask)
          current.time);
   return;
 }
+#endif
 
 static void dump_battery(int fd, int chiptype, uint32_t mask)
 {
@@ -244,9 +250,11 @@ static void dump_battery(int fd, int chiptype, uint32_t mask)
   case CHIP_TYPE_GAUGE:
     dump_gauge(fd, mask);
     break;
+#ifdef CONFIG_BATTERY_MONITOR
   case CHIP_TYPE_MONITOR:
     dump_monitor(fd, mask);
     break;
+#endif
   default:
     break;
   }
