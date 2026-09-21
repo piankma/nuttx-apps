@@ -1,0 +1,35 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_HAPTIC
+	tristate "Haptic (vibration motor) example"
+	default n
+	depends on INPUT_FF
+	---help---
+		A small command to try a force feedback vibration motor: a timed
+		buzz at a chosen strength, or the motor driver's built-in effects.
+
+if EXAMPLES_HAPTIC
+
+config EXAMPLES_HAPTIC_PROGNAME
+	string "Program name"
+	default "haptic"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_HAPTIC_PRIORITY
+	int "Haptic task priority"
+	default 100
+
+config EXAMPLES_HAPTIC_STACKSIZE
+	int "Haptic stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config EXAMPLES_HAPTIC_DEVPATH
+	string "Force feedback device"
+	default "/dev/input_ff0"
+
+endif
