@@ -1,0 +1,49 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_MODEM
+	tristate "Cellular modem command (AT commands, power, SMS)"
+	default n
+	depends on DEV_GPIO
+	---help---
+		A small command for a cellular modem on a serial port that speaks
+		3GPP AT commands (27.007/27.005): power it up and down through two
+		GPIO devices (supply and PWRKEY), send AT commands, show its
+		identity, SIM, signal and network registration, send and read SMS,
+		and pass the console through to it.  Written for the SIMCom
+		A7682E on the LilyGo T-Deck Max.
+
+if EXAMPLES_MODEM
+
+config EXAMPLES_MODEM_PROGNAME
+	string "Program name"
+	default "modem"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_MODEM_PRIORITY
+	int "modem task priority"
+	default 100
+
+config EXAMPLES_MODEM_STACKSIZE
+	int "modem stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config EXAMPLES_MODEM_TTY
+	string "Modem serial port"
+	default "/dev/ttyS1"
+
+config EXAMPLES_MODEM_PWR
+	string "GPIO device for the modem supply"
+	default "/dev/modem_pwr"
+
+config EXAMPLES_MODEM_PWRKEY
+	string "GPIO device that presses PWRKEY"
+	default "/dev/modem_pwrkey"
+	---help---
+		Writing 1 presses the key (pulls the modem's PWRKEY low).
+
+endif
