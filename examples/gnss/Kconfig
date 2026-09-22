@@ -1,0 +1,33 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_GNSS
+	tristate "GNSS position command"
+	default n
+	depends on UORB && SENSORS_GNSS
+	---help---
+		A small command that powers the GNSS receiver through its uORB
+		topics, reports the satellites in view while it waits and prints
+		the position once there is a fix.  It can set the system clock from
+		the fix.  Its lines fit a 40 column terminal.
+
+if EXAMPLES_GNSS
+
+config EXAMPLES_GNSS_PROGNAME
+	string "Program name"
+	default "gps"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_GNSS_PRIORITY
+	int "GNSS task priority"
+	default 100
+
+config EXAMPLES_GNSS_STACKSIZE
+	int "GNSS stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

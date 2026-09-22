@@ -1,0 +1,36 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+config EXAMPLES_LORA
+	tristate "LoRa send/receive command (SX126x)"
+	default n
+	depends on LPWAN_SX126X
+	---help---
+		A small command to send and receive LoRa packets through the SX126x
+		driver, with the frequency, spreading factor, bandwidth, coding
+		rate, power and sync word on the command line.
+
+if EXAMPLES_LORA
+
+config EXAMPLES_LORA_PROGNAME
+	string "Program name"
+	default "lora"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_LORA_PRIORITY
+	int "LoRa task priority"
+	default 100
+
+config EXAMPLES_LORA_STACKSIZE
+	int "LoRa stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config EXAMPLES_LORA_DEVPATH
+	string "SX126x device"
+	default "/dev/lora0"
+
+endif
