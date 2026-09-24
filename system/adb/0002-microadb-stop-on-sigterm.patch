@@ -1,0 +1,44 @@
+--- a/hal/hal_uv.c
++++ b/hal/hal_uv.c
+@@ -15,6 +15,7 @@
+  *
+  */
+ 
++#include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+@@ -68,11 +69,33 @@
+     free(client);
+ }
+ 
++static void adb_uv_close_handle(uv_handle_t *handle, void *arg) {
++    UNUSED(arg);
++    if (!uv_is_closing(handle)) {
++        uv_close(handle, NULL);
++    }
++}
++
++static void adb_uv_on_sigterm(uv_signal_t *handle, int signum) {
++    /* Asked to stop: close every handle (the server's and the clients'
++     * sockets among them), so that uv_run() returns and adbd exits with
++     * its sockets released; a restarted adbd can then listen again.
++     */
++
++    UNUSED(signum);
++    adb_log("stopping\n");
++    uv_walk(handle->loop, adb_uv_close_handle, NULL);
++}
++
+ int adb_hal_run(adb_context_t *context) {
+     int ret;
++    uv_signal_t sigterm;
+     adb_context_uv_t *adbd =
+         container_of(context, adb_context_uv_t, context);
+ 
++    uv_signal_init(adbd->loop, &sigterm);
++    uv_signal_start(&sigterm, adb_uv_on_sigterm, SIGTERM);
++
+     ret = uv_run(adbd->loop, UV_RUN_DEFAULT);
+     adb_log("uv_loop exit %d\n", ret);
+ 

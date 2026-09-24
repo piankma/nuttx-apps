@@ -23,7 +23,7 @@
 include $(APPDIR)/Make.defs
 
 ADB_URL ?= "https://github.com/spiriou/microADB/archive"
-ADB_VERSION ?= master
+ADB_VERSION ?= 85cc7a90101b2ae76ee4112ba285141c8fba5012
 
 ADB_DIR := $(APPDIR)/system/adb
 ADB_UNPACKNAME := microADB
@@ -35,6 +35,10 @@ $(ADB_UNPACKDIR):
 	$(Q) unzip -o $(ADB_VERSION).zip
 	$(call DELFILE, $(ADB_VERSION).zip)
 	$(call MOVEFILE, $(ADB_UNPACKNAME)-$(ADB_VERSION), $(ADB_UNPACKDIR))
+	$(Q) cd $(ADB_UNPACKDIR) && \
+	     for p in $(sort $(wildcard $(ADB_DIR)/*.patch)); do \
+	       patch -p1 < $$p || exit 1; \
+	     done
 
 # adb server app
 
@@ -68,7 +72,7 @@ CSRCS += $(ADB_UNPACKNAME)/hal/hal_uv_client_qemu.c
 endif
 
 ifeq ($(CONFIG_ADBD_AUTHENTICATION),y)
-CSRCS += $(ADB_UNPACKNAME)/adb_auth_key.c
+CSRCS += adb_auth.c
 endif
 
 ifeq ($(CONFIG_ADBD_FILE_SERVICE),y)

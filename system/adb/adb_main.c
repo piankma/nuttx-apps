@@ -154,9 +154,15 @@ int main(int argc, FAR char **argv)
     }
 #endif /* ADBD_USB_BOARDCTL */
 
+#ifdef CONFIG_ADBD_USB_SERVER
+  /* The USB transport needs the adb function's endpoints; a TCP-only
+   * adbd would wait for them for ever
+   */
+
   ADB_WAIT_EP_READY("/dev/adb0/ep0");
   ADB_WAIT_EP_READY("/dev/adb0/ep1");
   ADB_WAIT_EP_READY("/dev/adb0/ep2");
+#endif
 
 #ifdef CONFIG_ADBD_NET_INIT
   /* Bring up the network */

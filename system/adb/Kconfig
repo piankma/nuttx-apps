@@ -35,15 +35,26 @@ config ADBD_AUTHENTICATION
 	bool "Authentication support"
 	default n
 	---help---
-		Enable authentication for adb daemon.
+		Enable authentication for adb daemon: a host connects only if it
+		signs a random token with a key listed in ADBD_AUTH_KEYS
+		(adb_auth.c).
 
 if ADBD_AUTHENTICATION
 
+config ADBD_AUTH_KEYS
+	string "Allowed keys file"
+	default "/data/adb/adb_keys"
+	---help---
+		The public keys of the hosts allowed to connect, one per line,
+		as a host's ~/.android/adbkey.pub has it.
+
 config ADBD_AUTH_PUBKEY
-	bool "Public key authentication"
+	bool "Keep new hosts' keys"
 	default n
 	---help---
-		Enable hook to accept new public keys.
+		Keep the public key a host with no allowed key offers in
+		ADBD_AUTH_KEYS ".new", for the user to allow by adding it to
+		ADBD_AUTH_KEYS.  (It is never allowed by itself.)
 
 config ADBD_TOKEN_SIZE
 	int "Authentication token size"

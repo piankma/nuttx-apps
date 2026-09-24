@@ -1,0 +1,70 @@
+--- a/adb_client.c
++++ b/adb_client.c
+@@ -248,37 +248,28 @@
+             break;
+ 
+         case ADB_AUTH_SIGNATURE:
+-            /* Check all public keys */
+-            for (int i=0; g_adb_public_keys[i]; i++) {
++            /* Check the token's signature against the allowed keys */
+ 
+-                /* FIXME RSA primitives not integrated yet */
+-
+-                adb_log("skip key verification\n");
+-#if 0
+-                if (RSA_verify((RSAPublicKey*)g_adb_public_keys[i],
+-                    p->data,
+-                    p->msg.data_length,
+-                    client->token, SHA_DIGEST_SIZE))
+-                {
+-                    /* Key verification successful */
+-                    goto exit_connected;
+-                }
+-#endif
++            if (adb_auth_verify(client->token, sizeof(client->token),
++                                p->data, p->msg.data_length) == 0) {
++                goto exit_connected;
+             }
+ 
+-            /* Key verification failed.
+-             * TODO add retry counter and timer/delay
++            /* Not signed by an allowed key: ask again.  The host then
++             * tries its other keys, and at last offers its public key.
+              */
+ 
+             send_auth_request(client, p);
+             break;
+ 
+-#ifdef CONFIG_ADBD_AUTH_PUBKEY
+         case ADB_AUTH_RSAPUBLICKEY:
+-            adb_log("accept key from%s\n", strstr((char*)p->data, " "));
+-            /* FIXME always accept all new public keys for now */
+-            goto exit_connected;
+-#endif
++            /* A new host: keep its key until the user allows it; the
++             * host stays "unauthorized" and connects again later.
++             */
++
++            adb_auth_offer((const char *)p->data, p->msg.data_length);
++            adb_hal_apacket_release(client, p);
++            break;
+ 
+         default:
+             adb_err("invalid id %d\n", p->msg.arg0);
+--- a/adb.h
++++ b/adb.h
+@@ -201,7 +201,13 @@
+ void adb_service_close(adb_client_t *client, adb_service_t *svc, apacket *p);
+ 
+ #ifdef CONFIG_ADBD_AUTHENTICATION
+-extern const unsigned char *g_adb_public_keys[];
++/* Keys (adb_auth.c): 0 if sig is token signed by an allowed key; keep a
++ * key a host offers, for the user to allow
++ */
++
++int adb_auth_verify(const uint8_t *token, size_t tokenlen,
++                    const uint8_t *sig, size_t siglen);
++void adb_auth_offer(const char *key, size_t len);
+ #endif
+ 
+ /* TCP services */
