@@ -1,6 +1,8 @@
 /* sqlite_cfg.h.  Generated from sqlite_cfg.h.in by configure.  */
 /* sqlite_cfg.h.in.  Generated from configure.ac by autoheader.  */
 
+#include <nuttx/config.h>
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
@@ -50,13 +52,17 @@
 #define HAVE_PREAD 1
 
 /* Define to 1 if you have the `pread64' function. */
-#define HAVE_PREAD64 1
+#ifdef CONFIG_FS_LARGEFILE
+#  define HAVE_PREAD64 1
+#endif
 
 /* Define to 1 if you have the `pwrite' function. */
 #define HAVE_PWRITE 1
 
 /* Define to 1 if you have the `pwrite64' function. */
-#define HAVE_PWRITE64 1
+#ifdef CONFIG_FS_LARGEFILE
+#  define HAVE_PWRITE64 1
+#endif
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -84,6 +90,13 @@
 
 /* Define to 1 if the system has the type `uint32_t'. */
 #define HAVE_UINT32_T 1
+
+/* SQLite's u32 as sqlite3.h's prototypes have it: uint32_t is unsigned
+ * long on some targets (Xtensa), which sqlite3_autovacuum_pages() would
+ * not match
+ */
+
+#define UINT32_TYPE unsigned int
 
 /* Define to 1 if the system has the type `uint64_t'. */
 #define HAVE_UINT64_T 1

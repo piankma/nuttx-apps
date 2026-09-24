@@ -5,7 +5,7 @@
 
 config LIB_SQLITE
 	bool "SQLITE library"
-	depends on CONFIG_FS_LOCK_BUCKET_SIZE > 0
+	depends on FS_LOCK_BUCKET_SIZE > 0
 	default n
 
 if LIB_SQLITE
@@ -13,6 +13,23 @@ if LIB_SQLITE
 config LIB_SQLITE_VERSION
 	string "SQLITE version"
 	default "3.45.1"
+
+config LIB_SQLITE_YEAR
+	string "SQLITE release year"
+	default "2024"
+	---help---
+		The year of the version's release: sqlite.org keeps its
+		amalgamations under it (www.sqlite.org/<year>/).  Used when
+		there is no git checkout in sqlite/.
+
+config LIB_SQLITE_SMALL
+	bool "Leave out rarely used parts"
+	default n
+	---help---
+		Build without loadable extensions, deprecated and shared-cache
+		interfaces, JSON, WAL, UTF-16, memory-mapped I/O and the
+		progress and trace callbacks, and keep temporary tables in
+		memory.  Saves flash on small systems.
 
 config UTILS_SQLITE
 	tristate "SQLite cmd line tool"
