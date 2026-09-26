@@ -386,17 +386,14 @@ uint8_t ahdlc_tx(struct ppp_context_s *ctx, uint16_t protocol,
 
   ctx->ahdlc_tx_crc = 0xffff;
 
-  /* send HDLC control and address if not disabled or of LCP frame type */
-
-  /* if ((0==(ahdlc_flags & PPP_ACFC)) || ((0xc0==buffer[0]) &&
-   * (0x21==buffer[1])))
+  /* Send the HDLC address and control fields always.  A peer that asked
+   * for their compression (ACFC) must still take them (RFC 1661 6.6), and
+   * some take nothing else: a SIMCom A7682E asks for ACFC, then ignores
+   * every frame without them.
    */
 
-  if ((0 == (ctx->ahdlc_flags & PPP_ACFC)) || (protocol == LCP))
-    {
-      ahdlc_tx_char(ctx, protocol, 0xff);
-      ahdlc_tx_char(ctx, protocol, 0x03);
-    }
+  ahdlc_tx_char(ctx, protocol, 0xff);
+  ahdlc_tx_char(ctx, protocol, 0x03);
 
   /* Write Protocol */
 

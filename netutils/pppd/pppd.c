@@ -228,6 +228,11 @@ void ppp_reconnect(FAR struct ppp_context_s *ctx)
     {
       do
         {
+          if (pppd_settings->stop != NULL && *pppd_settings->stop)
+            {
+              return;
+            }
+
           ret = chat(&ctx->ctl, pppd_settings->connect_script);
           if (ret < 0)
             {
@@ -353,7 +358,7 @@ int pppd(const struct pppd_settings_s *pppd_settings)
   ppp_init(ctx);
   ppp_reconnect(ctx);
 
-  while (1)
+  while (pppd_settings->stop == NULL || !*pppd_settings->stop)
     {
       fds[0].revents = fds[1].revents = 0;
 
@@ -395,5 +400,12 @@ int pppd(const struct pppd_settings_s *pppd_settings)
         }
     }
 
-  return 1;
+  /* Asked to stop: end the link, then let go of everything */
+
+  lcp_disconnect(ctx, ++ctx->ppp_id);
+  netlib_ifdown((char *)ctx->ifname);
+  close(ctx->ctl.fd);
+  close(ctx->if_fd);
+  free(ctx);
+  return 0;
 }
